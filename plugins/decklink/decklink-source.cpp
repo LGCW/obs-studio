@@ -277,6 +277,7 @@ static obs_properties_t *decklink_get_properties(void *data)
 				       OBS_COMBO_FORMAT_INT);
 
 	obs_property_list_add_int(list, "8-bit YUV", bmdFormat8BitYUV);
+	obs_property_list_add_int(list, "10-bit YUV", bmdFormat10BitYUV);
 	obs_property_list_add_int(list, "8-bit BGRA", bmdFormat8BitBGRA);
 
 	list = obs_properties_add_list(props, COLOR_SPACE, TEXT_COLOR_SPACE,
