@@ -17,19 +17,6 @@
 #include <caption/caption.h>
 #include <util/bitstream.h>
 
-static inline enum video_format ConvertPixelFormat(BMDPixelFormat format)
-{
-	switch (format) {
-	case bmdFormat8BitBGRA:
-		return VIDEO_FORMAT_BGRX;
-
-	default:
-	case bmdFormat8BitYUV:;
-	}
-
-	return VIDEO_FORMAT_UYVY;
-}
-
 static inline int ConvertChannelFormat(speaker_layout format)
 {
 	switch (format) {
@@ -303,7 +290,7 @@ void DeckLinkDeviceInstance::SetupVideoFormat(DeckLinkDeviceMode *mode_)
 	if (mode_ == nullptr)
 		return;
 
-	currentFrame.format = ConvertPixelFormat(pixelFormat);
+	currentFrame.format = VIDEO_FORMAT_UYVY;
 
 	colorSpace = static_cast<DeckLinkInput *>(decklink)->GetColorSpace();
 	if (colorSpace == VIDEO_CS_DEFAULT) {
@@ -632,13 +619,22 @@ HRESULT STDMETHODCALLTYPE DeckLinkDeviceInstance::VideoInputFormatChanged(
 
 	if (events & bmdVideoInputColorspaceChanged) {
 		switch (detectedSignalFlags) {
-		case bmdDetectedVideoInputRGB444:
+		case bmdDetectedVideoInputRGB444 |
+			bmdDetectedVideoInput8BitDepth:
 			pixelFormat = bmdFormat8BitBGRA;
 			break;
-
-		default:
-		case bmdDetectedVideoInputYCbCr422:
+		case bmdDetectedVideoInputRGB444 |
+			bmdDetectedVideoInput10BitDepth:
+			pixelFormat = bmdFormat10BitRGBX;
+			break;
+		case bmdDetectedVideoInputYCbCr422 |
+			bmdDetectedVideoInput10BitDepth:
 			pixelFormat = bmdFormat10BitYUV;
+			break;
+		default:
+		case bmdDetectedVideoInputYCbCr422 |
+			bmdDetectedVideoInput8BitDepth:
+			pixelFormat = bmdFormat8BitYUV;
 			break;
 		}
 	}
